@@ -1,19 +1,34 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './components/Layout';
+import NotFound from './components/NotFound';
 import Home from './pages/Home';
-import About from './pages/About';
+import Todo from './pages/Todo';
+import Bus from './pages/Bus';
+import Game from './pages/Game';
 
 const router = createBrowserRouter([
   {
     element: <Layout />,
     children: [
       {
+        path: '*',
+        element: <NotFound />,
+      },
+      {
         path: '/',
         element: <Home />,
       },
       {
-        path: '/About',
-        element: <About />,
+        path: '/Todo',
+        element: <Todo />,
+      },
+      {
+        path: '/Bus',
+        element: <Bus />,
+      },
+      {
+        path: '/Game',
+        element: <Game />,
       },
     ],
   },
