@@ -28,6 +28,13 @@ function Todo() {
     }
   }
 
+  //鍵盤按enter
+  function handleInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
+      addTask();
+    }
+  }
+
   function deleteTask(index: number) {
     const undatedTasks = tasks.filter((_, i) => i !== index);
     setTasks(undatedTasks);
@@ -52,6 +59,7 @@ function Todo() {
           label="Enter a task..."
           value={newTask}
           onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
         />
         <Button
           className="add-btn"
@@ -79,11 +87,15 @@ function Todo() {
             <Grid xs={12} sm={6} md={4} lg={3}>
               <Card key={index}>
                 <CardContent>
-                  <Typography className="text" variant="h5" component="div">
+                  <Typography
+                    className="text"
+                    variant="h5"
+                    style={{ wordWrap: 'break-word' }}
+                  >
                     {task}
                   </Typography>
                 </CardContent>
-                <CardActions>
+                <CardActions sx={{ justifyContent: 'flex-end' }}>
                   <Button
                     className="delete-btn"
                     variant="contained"
