@@ -11,11 +11,19 @@ import Typography from '@mui/material/Typography';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import Img from '../assets/work_shigoto_osame_man.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Todo() {
   const [tasks, setTasks] = useState<string[]>([]);
   const [newTask, setNewTask] = useState('');
+
+  //載入localStorage資料
+  useEffect(() => {
+    if (localStorage.getItem('localTasks')) {
+      const storedList = JSON.parse(localStorage.getItem('localTasks') || '{}');
+      setTasks(storedList);
+    }
+  }, []);
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     setNewTask(event.target.value);
@@ -23,7 +31,8 @@ function Todo() {
 
   function addTask() {
     if (newTask.trim() !== '') {
-      setTasks((t) => [...t, newTask]);
+      setTasks([...tasks, newTask]);
+      localStorage.setItem('localTasks', JSON.stringify([...tasks, newTask]));
       setNewTask('');
     }
   }
@@ -38,6 +47,7 @@ function Todo() {
   function deleteTask(index: number) {
     const undatedTasks = tasks.filter((_, i) => i !== index);
     setTasks(undatedTasks);
+    localStorage.setItem('localTasks', JSON.stringify(undatedTasks));
   }
 
   return (
@@ -84,8 +94,8 @@ function Todo() {
       >
         <Grid container rowSpacing={3} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
           {tasks.map((task, index) => (
-            <Grid xs={12} sm={6} md={4} lg={3}>
-              <Card key={index}>
+            <Grid key={index} xs={12} sm={6} md={4} lg={3}>
+              <Card>
                 <CardContent>
                   <Typography
                     className="text"
