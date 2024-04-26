@@ -17,47 +17,57 @@ import { useState } from 'react';
 
 //測試data
 import test from '../data/TEST';
-//import test2 from '../data/TEST2';
+import test2 from '../data/TEST2';
 //import useFetch from '../components/useFetch';
 
 function Bus() {
-  const [busId, setBusId] = useState(''); //存放公車ID
-  //存放去返程
+  const [data, setData] = useState(Object);
+  const [departureStopNameZh, setDepartureStopNameZh] = useState('');
+  const [destinationStopNameZh, setDestinationStopNameZh] = useState('');
 
   //取得高雄市公車號碼下拉資料
-  const BusNameData = test
+  //路線資料API
+  // const BusDataList = () => {
+  //   const { data, error, isLoading } = useFetch('放url');
+  // };
+  const BusData = test
     .map((t) => {
       return {
-        id: t.SubRoutes[0].SubRouteID,
-        label: t.SubRoutes[0].SubRouteName.Zh_tw,
+        RouteID: t.RouteID,
+        RouteName: t.RouteName.Zh_tw,
+        DepartureStopNameZh: t.DepartureStopNameZh,
+        DestinationStopNameZh: t.DestinationStopNameZh,
       };
     })
     .sort(function (a, b) {
-      return a.label.localeCompare(b.label);
+      return a.RouteName.localeCompare(b.RouteName);
     });
 
-  // const BusNumList = () => {
-  //   const { data, error, isLoading } = useFetch('放url');
-  // };
-
   //選擇路線
-  function comboBoxChange(value: string | undefined) {
+  function comboBoxChange(value: object) {
     if (value) {
-      setBusId(value);
+      setData(value);
     }
   }
 
   //按下搜尋後呼叫去回程和路線和即時動態
   function searchClick() {
-    if (busId !== '') {
-      console.log(busId);
+    if (Object.keys(data).length !== 0) {
+      //寫入起訖站
+      setDepartureStopNameZh(data.DepartureStopNameZh);
+      setDestinationStopNameZh(data.DestinationStopNameZh);
+
+      //讀取站牌資料
+      //站牌資料API
+      // const BusRoute = (routeName: string) => {
+      //   const { data, error, isLoading } = useFetch(`url/${routeName}`);
+      // };
+      const a = test2.filter((x) => {
+        return x.SubRouteName.Zh_tw == data.RouteName;
+      });
+      console.log(a);
     }
   }
-  // const BusRoute = (busNum: string) => {
-  //   const { data, error, isLoading } = useFetch(
-  //     `https://dummyjson.com/products/${busNum}`
-  //   );
-  // };
 
   return (
     <Container className="kao-bus" maxWidth="xl">
@@ -78,13 +88,16 @@ function Bus() {
           disableClearable
           id="combo-box-demo"
           sx={{ width: 300 }}
-          options={BusNameData}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
+          options={BusData}
+          getOptionLabel={(option) => option.RouteName}
+          isOptionEqualToValue={(option, value) =>
+            option.RouteID === value.RouteID
+          }
           renderInput={(params) => (
             <TextField {...params} label="請輸入路線名稱" />
           )}
           onChange={(event, newValue) => {
-            comboBoxChange(newValue?.id);
+            comboBoxChange(newValue);
           }}
         />
         <Button
@@ -109,7 +122,7 @@ function Bus() {
           color="success"
           sx={{ m: 3, width: '50%' }}
         >
-          去程
+          往{departureStopNameZh}
         </Button>
         <Button
           className="back-btn"
@@ -117,7 +130,7 @@ function Bus() {
           color="success"
           sx={{ m: 3, width: '50%' }}
         >
-          返程
+          往{destinationStopNameZh}
         </Button>
       </Box>
 
