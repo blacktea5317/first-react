@@ -24,6 +24,8 @@ function Bus() {
   const [data, setData] = useState(Object);
   const [departureStopNameZh, setDepartureStopNameZh] = useState('');
   const [destinationStopNameZh, setDestinationStopNameZh] = useState('');
+  const [allGoStopNameZh, setAllGoStopNameZh] = useState<string[]>([]);
+  const [allBackStopNameZh, setAllBackStopNameZh] = useState<string[]>([]);
 
   //取得高雄市公車號碼下拉資料
   //路線資料API
@@ -62,10 +64,23 @@ function Bus() {
       // const BusRoute = (routeName: string) => {
       //   const { data, error, isLoading } = useFetch(`url/${routeName}`);
       // };
-      const a = test2.filter((x) => {
-        return x.SubRouteName.Zh_tw == data.RouteName;
-      });
-      console.log(a);
+      const BusRoute = test2.filter(
+        (x) => x.SubRouteName.Zh_tw === data.RouteName
+      );
+
+      //去程資料
+      const go = BusRoute.filter((x) => x.Direction === 0);
+      //去程站名
+      const goStopName = go.map((a) => a.Stops.map((b) => b.StopName.Zh_tw));
+      setAllGoStopNameZh(goStopName[0]);
+
+      //回程資料
+      const back = BusRoute.filter((x) => x.Direction === 1);
+      //回程站名
+      const backStopName = back.map((a) =>
+        a.Stops.map((b) => b.StopName.Zh_tw)
+      );
+      setAllBackStopNameZh(backStopName[0]);
     }
   }
 
@@ -122,7 +137,7 @@ function Bus() {
           color="success"
           sx={{ m: 3, width: '50%' }}
         >
-          往{departureStopNameZh}
+          往{destinationStopNameZh}
         </Button>
         <Button
           className="back-btn"
@@ -130,32 +145,46 @@ function Bus() {
           color="success"
           sx={{ m: 3, width: '50%' }}
         >
-          往{destinationStopNameZh}
+          往{departureStopNameZh}
         </Button>
       </Box>
-
-      <Timeline>
-        <TimelineItem>
-          <TimelineOppositeContent color="text.secondary">
-            09:30 am
-          </TimelineOppositeContent>
-          <TimelineSeparator>
-            <TimelineDot />
-            {/* 最後一站不用TimelineConnector */}
-            <TimelineConnector />
-          </TimelineSeparator>
-          <TimelineContent>第1站</TimelineContent>
-        </TimelineItem>
-        <TimelineItem>
-          <TimelineOppositeContent color="text.secondary">
-            10:00 am
-          </TimelineOppositeContent>
-          <TimelineSeparator>
-            <TimelineDot />
-          </TimelineSeparator>
-          <TimelineContent>第2站</TimelineContent>
-        </TimelineItem>
-      </Timeline>
+      <Box>
+        {allGoStopNameZh.map((item, index) => (
+          <Timeline key={index}>
+            <TimelineItem>
+              <TimelineOppositeContent color="text.secondary">
+                09:30 am
+              </TimelineOppositeContent>
+              <TimelineSeparator>
+                <TimelineDot />
+                {index === allGoStopNameZh.length - 1 ? null : (
+                  <TimelineConnector />
+                )}
+              </TimelineSeparator>
+              <TimelineContent>{item}</TimelineContent>
+            </TimelineItem>
+          </Timeline>
+        ))}
+      </Box>
+      /////
+      <Box>
+        {allBackStopNameZh.map((item, index) => (
+          <Timeline key={index}>
+            <TimelineItem>
+              <TimelineOppositeContent color="text.secondary">
+                09:30 am
+              </TimelineOppositeContent>
+              <TimelineSeparator>
+                <TimelineDot />
+                {index === allBackStopNameZh.length - 1 ? null : (
+                  <TimelineConnector />
+                )}
+              </TimelineSeparator>
+              <TimelineContent>{item}</TimelineContent>
+            </TimelineItem>
+          </Timeline>
+        ))}
+      </Box>
     </Container>
   );
 }
