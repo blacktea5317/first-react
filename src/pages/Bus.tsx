@@ -68,6 +68,11 @@ function Bus() {
         (x) => x.SubRouteName.Zh_tw === data.RouteName
       );
 
+      if (BusRoute.length === 0) {
+        alert('無路線資料');
+        return;
+      }
+
       //去程資料
       const go = BusRoute.filter((x) => x.Direction === 0);
       //去程站名
