@@ -18,6 +18,7 @@ import { useState } from 'react';
 //測試data
 import test from '../data/TEST';
 import test2 from '../data/TEST2';
+import test3 from '../data/TEST3';
 //import useFetch from '../components/useFetch';
 
 function Bus() {
@@ -28,7 +29,7 @@ function Bus() {
   const [allBackStopNameZh, setAllBackStopNameZh] = useState<string[]>([]);
 
   //取得高雄市公車號碼下拉資料
-  //路線資料API
+  //路線資料API待串(先使用TEST)
   // const BusDataList = () => {
   //   const { data, error, isLoading } = useFetch('放url');
   // };
@@ -52,41 +53,58 @@ function Bus() {
     }
   }
 
-  //按下搜尋後呼叫去回程和路線和即時動態
+  //按下搜尋後事件
   function searchClick() {
     if (Object.keys(data).length !== 0) {
       //寫入起訖站
       setDepartureStopNameZh(data.DepartureStopNameZh);
       setDestinationStopNameZh(data.DestinationStopNameZh);
-
-      //讀取站牌資料
-      //站牌資料API
-      // const BusRoute = (routeName: string) => {
-      //   const { data, error, isLoading } = useFetch(`url/${routeName}`);
-      // };
-      const BusRoute = test2.filter(
-        (x) => x.SubRouteName.Zh_tw === data.RouteName
-      );
-
-      if (BusRoute.length === 0) {
-        alert('無路線資料');
-        return;
-      }
-
-      //去程資料
-      const go = BusRoute.filter((x) => x.Direction === 0);
-      //去程站名
-      const goStopName = go.map((a) => a.Stops.map((b) => b.StopName.Zh_tw));
-      setAllGoStopNameZh(goStopName[0]);
-
-      //回程資料
-      const back = BusRoute.filter((x) => x.Direction === 1);
-      //回程站名
-      const backStopName = back.map((a) =>
-        a.Stops.map((b) => b.StopName.Zh_tw)
-      );
-      setAllBackStopNameZh(backStopName[0]);
+      //讀取路線
+      getBusRoute();
+      //讀取到站預估時間資料
+      getBusTime();
     }
+  }
+
+  //取得去回程和路線
+  function getBusRoute() {
+    //站牌資料API待串(先使用TEST2)
+    // const BusRoute = (routeName: string) => {
+    //   const { data, error, isLoading } = useFetch(`url/${routeName}`);
+    // };
+    const BusRoute = test2.filter(
+      (x) => x.SubRouteName.Zh_tw === data.RouteName
+    );
+
+    if (BusRoute.length === 0) {
+      alert('無路線資料');
+      return;
+    }
+
+    //去程資料
+    const go = BusRoute.filter((x) => x.Direction === 0);
+    //去程站名
+    const goStopName = go.map((a) => a.Stops.map((b) => b.StopName.Zh_tw));
+    setAllGoStopNameZh(goStopName[0]);
+
+    //回程資料
+    const back = BusRoute.filter((x) => x.Direction === 1);
+    //回程站名
+    const backStopName = back.map((a) => a.Stops.map((b) => b.StopName.Zh_tw));
+    setAllBackStopNameZh(backStopName[0]);
+  }
+
+  //取得到站預估時間
+  function getBusTime() {
+    //API待串(先使用TEST3)
+    const BusTime = test3.filter((x) => x.RouteID === data.RouteID);
+
+    if (BusTime.length === 0) {
+      alert('無到站時間資料');
+      return;
+    }
+
+    console.log(BusTime);
   }
 
   return (
