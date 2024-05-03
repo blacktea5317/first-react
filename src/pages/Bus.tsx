@@ -12,65 +12,81 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-
-import { useState } from 'react';
-
+import Loading from '../components/Loading';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 //測試data
-import test from '../data/TEST';
 import test2 from '../data/TEST2';
 import test3 from '../data/TEST3';
-//import useFetch from '../components/useFetch';
+
+interface BusData {
+  RouteID: string;
+  RouteName: string;
+  DepartureStopNameZh: string;
+  DestinationStopNameZh: string | undefined;
+}
+interface BusRouteData {
+  StopID: string;
+  StopName: string;
+}
+interface BusTimeData {
+  StopID: string;
+  BusTime: string | undefined;
+}
 
 function Bus() {
-  const [data, setData] = useState(Object);
+  const [data, setData] = useState<BusData[]>([]); //下拉資料
+  const [isLoading, setIsLoading] = useState(true); //API讀取
   const [isVisible, setIsVisible] = useState(false); //是否顯示下方版面
+  const [routeID, setRouteID] = useState('');
   const [departureStopNameZh, setDepartureStopNameZh] = useState('');
   const [destinationStopNameZh, setDestinationStopNameZh] = useState('');
-  const [busRouteData, setBusRouteData] = useState<
-    {
-      StopID: string;
-      StopName: string;
-    }[]
-  >([]);
-  const [busTimeData, setBusTimeData] = useState<
-    {
-      StopID: string;
-      BusTime: string | undefined;
-    }[]
-  >([]);
+  const [busRouteData, setBusRouteData] = useState<BusRouteData[]>([]);
+  const [busTimeData, setBusTimeData] = useState<BusTimeData[]>([]);
 
   //取得高雄市公車號碼下拉資料
-  //路線資料API待串(先使用TEST)
-  // const BusDataList = () => {
-  //   const { data, error, isLoading } = useFetch('放url');
-  // };
-  const BusData = test
-    .map((t) => {
-      return {
-        RouteID: t.RouteID,
-        RouteName: t.RouteName.Zh_tw,
-        DepartureStopNameZh: t.DepartureStopNameZh,
-        DestinationStopNameZh: t.DestinationStopNameZh,
-      };
-    })
-    .sort(function (a, b) {
-      return a.RouteName.localeCompare(b.RouteName);
-    });
+  useEffect(() => {
+    setIsLoading(true);
+    axios
+      .get(
+        'https://tdx.transportdata.tw/api/basic/v2/Bus/Route/City/Kaohsiung?%24format=JSON'
+      )
+      .then((response) => {
+        const data = response.data
+          ?.map((m) => {
+            return {
+              RouteID: m.RouteID,
+              RouteName: m.RouteName.Zh_tw,
+              DepartureStopNameZh: m.DepartureStopNameZh,
+              DestinationStopNameZh: m.DestinationStopNameZh,
+            };
+          })
+          .sort(function (a, b) {
+            return a.RouteName.localeCompare(b.RouteName);
+          });
+        setData(data);
+      })
+      .catch((error) => {
+        alert('抓取資料錯誤，請確認後再試');
+        console.log(error);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   //選擇路線
-  function comboBoxChange(value: object) {
+  function comboBoxChange(value) {
     if (value) {
-      setData(value);
+      //取得公車號碼
+      setRouteID(value.RouteID);
+      //寫入起訖站
+      setDepartureStopNameZh(value.DepartureStopNameZh);
+      setDestinationStopNameZh(value.DestinationStopNameZh);
     }
   }
 
   //按下搜尋後事件
   function searchClick() {
-    if (Object.keys(data).length !== 0) {
-      //寫入起訖站
-      setDepartureStopNameZh(data.DepartureStopNameZh);
-      setDestinationStopNameZh(data.DestinationStopNameZh);
-
+    if (routeID !== '') {
       //取得去程資料(Direction=0)
       //讀取路線
       getBusRoute(0);
@@ -81,6 +97,7 @@ function Bus() {
       setIsVisible(true);
     } else {
       alert('請選擇路線');
+      setIsVisible(false);
     }
   }
 
@@ -96,11 +113,8 @@ function Bus() {
   //取得去回程和路線(value:去返程)
   function getBusRoute(value: number) {
     //站牌資料API待串(先使用TEST2)
-    // const BusRoute = (routeName: string) => {
-    //   const { data, error, isLoading } = useFetch(`url/${routeName}`);
-    // };
     const BusRoute = test2.filter(
-      (x) => x.Direction === value && x.RouteID === data.RouteID
+      (x) => x.Direction === value && x.RouteID === routeID
     );
 
     if (BusRoute.length === 0) {
@@ -108,8 +122,8 @@ function Bus() {
       return;
     }
 
-    const BusRouteData = BusRoute.map((a) =>
-      a.Stops.map((b) => {
+    const BusRouteData = BusRoute?.map((a) =>
+      a.Stops?.map((b) => {
         return {
           StopID: b.StopID,
           StopName: b.StopName.Zh_tw,
@@ -124,7 +138,7 @@ function Bus() {
   function getBusTime(value: number) {
     //API待串(先使用TEST3)
     const BusTime = test3.filter(
-      (x) => x.Direction === value && x.RouteID === data.RouteID
+      (x) => x.Direction === value && x.RouteID === routeID
     );
 
     if (BusTime.length === 0) {
@@ -132,7 +146,7 @@ function Bus() {
       return;
     }
 
-    const BusTimeData = BusTime.map((a) => {
+    const BusTimeData = BusTime?.map((a) => {
       const EstimateTime: string | undefined =
         a.EstimateTime === undefined
           ? undefined
@@ -177,7 +191,7 @@ function Bus() {
           disableClearable
           id="combo-box-demo"
           sx={{ width: 300 }}
-          options={BusData}
+          options={data}
           getOptionLabel={(option) => option.RouteName}
           isOptionEqualToValue={(option, value) =>
             option.RouteID === value.RouteID
@@ -198,8 +212,11 @@ function Bus() {
           Search
         </Button>
       </Box>
+
       {!isVisible ? (
         <Box component="div"></Box>
+      ) : isLoading ? (
+        <Loading />
       ) : (
         <Box component="div">
           <Box
@@ -233,20 +250,20 @@ function Bus() {
             </Button>
           </Box>
           <Box>
-            {busRouteData.map((item, index) => (
+            {busRouteData?.map((item, index) => (
               <Timeline key={index}>
                 <TimelineItem>
                   <TimelineOppositeContent color="text.secondary">
                     {
                       busTimeData
-                        .filter((x) => x.StopID == item.StopID)
-                        .map((a) => a.BusTime)[0]
+                        ?.filter((x) => x.StopID == item.StopID)
+                        ?.map((a) => a.BusTime)[0]
                     }
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     {busTimeData
-                      .filter((x) => x.StopID == item.StopID)
-                      .map((a) => a.BusTime)[0] !== '即將到站' ? (
+                      ?.filter((x) => x.StopID == item.StopID)
+                      ?.map((a) => a.BusTime)[0] !== '即將到站' ? (
                       <TimelineDot />
                     ) : (
                       <TimelineDot color="warning" />
