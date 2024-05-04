@@ -6,33 +6,36 @@ import Todo from './pages/Todo';
 import Bus from './pages/Bus';
 import Game from './pages/Game';
 
-const router = createBrowserRouter([
-  {
-    element: <Layout />,
-    children: [
-      {
-        path: '*',
-        element: <NotFound />,
-      },
-      {
-        path: '/first-react/',
-        element: <Home />,
-      },
-      {
-        path: '/first-react/Todo',
-        element: <Todo />,
-      },
-      {
-        path: '/first-react/Bus',
-        element: <Bus />,
-      },
-      {
-        path: '/first-react/Game',
-        element: <Game />,
-      },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      element: <Layout />,
+      children: [
+        {
+          path: '*',
+          element: <NotFound />,
+        },
+        {
+          path: '/',
+          element: <Home />,
+        },
+        {
+          path: '/Todo',
+          element: <Todo />,
+        },
+        {
+          path: '/Bus',
+          element: <Bus />,
+        },
+        {
+          path: '/Game',
+          element: <Game />,
+        },
+      ],
+    },
+  ],
+  { basename: '/first-react' }
+);
 
 const App = () => {
   return <RouterProvider router={router} />;
