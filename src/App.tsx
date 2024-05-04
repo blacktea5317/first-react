@@ -15,19 +15,19 @@ const router = createBrowserRouter([
         element: <NotFound />,
       },
       {
-        path: '/',
+        path: '/first-react/',
         element: <Home />,
       },
       {
-        path: '/Todo',
+        path: '/first-react/Todo',
         element: <Todo />,
       },
       {
-        path: '/Bus',
+        path: '/first-react/Bus',
         element: <Bus />,
       },
       {
-        path: '/Game',
+        path: '/first-react/Game',
         element: <Game />,
       },
     ],

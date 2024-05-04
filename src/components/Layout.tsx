@@ -126,7 +126,7 @@ export default function MiniDrawer() {
             variant="h6"
             noWrap
             component={Link}
-            to="/"
+            to="/first-react/"
             sx={{ textDecoration: 'none', color: 'inherit' }}
           >
             My Work Tools
@@ -149,7 +149,7 @@ export default function MiniDrawer() {
             <ListItem
               key={text}
               component={Link}
-              to={'/' + text}
+              to={'/first-react/' + text}
               disablePadding
               sx={{ display: 'block', color: 'inherit' }}
             >
@@ -186,7 +186,7 @@ export default function MiniDrawer() {
             <ListItem
               key={text}
               component={Link}
-              to={'/' + text}
+              to={'/first-react/' + text}
               disablePadding
               sx={{ display: 'block', color: 'inherit' }}
             >
