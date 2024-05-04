@@ -15,9 +15,6 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import Loading from '../components/Loading';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-//測試data
-import test2 from '../data/TEST2';
-import test3 from '../data/TEST3';
 
 interface BusData {
   RouteID: string;
@@ -38,6 +35,7 @@ function Bus() {
   const [data, setData] = useState<BusData[]>([]); //下拉資料
   const [isLoading, setIsLoading] = useState(true); //API讀取
   const [isVisible, setIsVisible] = useState(false); //是否顯示下方版面
+  const [isBackClick, setIsBackClick] = useState(false); //返程點擊
   const [routeID, setRouteID] = useState('');
   const [departureStopNameZh, setDepartureStopNameZh] = useState('');
   const [destinationStopNameZh, setDestinationStopNameZh] = useState('');
@@ -68,30 +66,29 @@ function Bus() {
       })
       .catch((error) => {
         alert('抓取資料錯誤，請確認後再試');
-        console.log(error);
+        console.error(error);
       })
       .finally(() => setIsLoading(false));
   }, []);
 
   //選擇路線
   function comboBoxChange(value) {
-    if (value) {
-      //取得公車號碼
-      setRouteID(value.RouteID);
-      //寫入起訖站
-      setDepartureStopNameZh(value.DepartureStopNameZh);
-      setDestinationStopNameZh(value.DestinationStopNameZh);
-    }
+    //取得公車號碼
+    setRouteID(value.RouteID);
+    //寫入起訖站
+    setDepartureStopNameZh(value.DepartureStopNameZh);
+    setDestinationStopNameZh(value.DestinationStopNameZh);
+    //取得去程資料
+    setIsBackClick(false);
+    //下方版面顯示
+    setIsVisible(false);
   }
 
   //按下搜尋後事件
   function searchClick() {
     if (routeID !== '') {
       //取得去程資料(Direction=0)
-      //讀取路線
-      getBusRoute(0);
-      //讀取到站預估時間資料
-      getBusTime(0);
+      getData(0);
 
       //下方版面顯示
       setIsVisible(true);
@@ -103,73 +100,152 @@ function Bus() {
 
   //按下往XXX
   function gobackClick(value: number) {
+    if (value === 1) {
+      setIsBackClick(true);
+    } else {
+      setIsBackClick(false);
+    }
     //取得去OR返時間資料
-    //讀取路線
-    getBusRoute(value);
-    //讀取到站預估時間資料
-    getBusTime(value);
+    getData(value);
   }
 
   //取得去回程和路線(value:去返程)
-  function getBusRoute(value: number) {
-    //站牌資料API待串(先使用TEST2)
-    const BusRoute = test2.filter(
-      (x) => x.Direction === value && x.RouteID === routeID
-    );
-
-    if (BusRoute.length === 0) {
-      alert('無路線資料');
-      return;
-    }
-
-    const BusRouteData = BusRoute?.map((a) =>
-      a.Stops?.map((b) => {
-        return {
-          StopID: b.StopID,
-          StopName: b.StopName.Zh_tw,
-        };
-      })
-    );
-    const AllBusRouteData = BusRouteData.flat(1);
-    setBusRouteData(AllBusRouteData);
-  }
+  // function getBusRoute() {
+  //  axios.get(
+  //   `https://tdx.transportdata.tw/api/basic/v2/Bus/StopOfRoute/City/Kaohsiung/${routeID}?%24format=JSON`
+  //  );
+  //.then((response) => {
+  //return { response };
+  // const data = response.data?.filter(
+  //   (x) => x.Direction === value && x.RouteID === routeID
+  // );
+  // const BusRouteData = data?.map((a) =>
+  //   a.Stops?.map((b) => {
+  //     return {
+  //       StopID: b.StopID,
+  //       StopName: b.StopName.Zh_tw,
+  //     };
+  //   })
+  // );
+  // const AllBusRouteData = BusRouteData.flat(1);
+  // setBusRouteData(AllBusRouteData);
+  //});
+  // .catch((error) => {
+  //   alert('抓取資料錯誤，請確認後再試');
+  //   setIsVisible(false);
+  //   console.error(error);
+  // })
+  // .finally(() => setIsLoading(false));
+  // }
 
   //取得到站預估時間(value:去返程)
-  function getBusTime(value: number) {
-    //API待串(先使用TEST3)
-    const BusTime = test3.filter(
-      (x) => x.Direction === value && x.RouteID === routeID
-    );
+  //function getBusTime() {
+  // axios.get(
+  //   `https://tdx.transportdata.tw/api/basic/v2/Bus/EstimatedTimeOfArrival/City/Kaohsiung/${routeID}?%24format=JSON`
+  //  );
+  //.then((response) => {
+  //return { response };
+  //  const data = response.data?.filter(
+  //    (x) => x.Direction === value && x.RouteID === routeID
+  //  );
+  // const BusTimeData = data?.map((a) => {
+  //   const EstimateTime: string | undefined =
+  //     a.EstimateTime === undefined
+  //       ? undefined
+  //       : Math.floor(a.EstimateTime / 60) < 3
+  //       ? '即將到站'
+  //       : Math.floor(a.EstimateTime / 60).toString() + '分';
 
-    if (BusTime.length === 0) {
-      alert('無到站時間資料');
-      return;
-    }
+  //   let NextBusTime = undefined;
+  //   if (a.NextBusTime !== undefined) {
+  //     const date = new Date(a.NextBusTime);
+  //     NextBusTime =
+  //       date.getHours().toString().padStart(2, '0') +
+  //       ':' +
+  //       date.getMinutes().toString().padStart(2, '0');
+  //   }
 
-    const BusTimeData = BusTime?.map((a) => {
-      const EstimateTime: string | undefined =
-        a.EstimateTime === undefined
-          ? undefined
-          : Math.floor(a.EstimateTime / 60) < 3
-          ? '即將到站'
-          : Math.floor(a.EstimateTime / 60).toString() + '分';
+  //   const BusTime =
+  //     EstimateTime === undefined ? NextBusTime : EstimateTime;
+  //   return {
+  //     StopID: a.StopID,
+  //     BusTime: BusTime === undefined ? '末班駛離' : BusTime,
+  //   };
+  // });
+  // setBusTimeData(BusTimeData);
+  //});
+  // .catch((error) => {
+  //   alert('抓取資料錯誤，請確認後再試');
+  //   setIsVisible(false);
+  //   console.error(error);
+  // })
+  // .finally(() => setIsLoading(false));
+  // }
 
-      let NextBusTime = undefined;
-      if (a.NextBusTime !== undefined) {
-        const date = new Date(a.NextBusTime);
-        NextBusTime =
-          date.getHours().toString().padStart(2, '0') +
-          ':' +
-          date.getMinutes().toString().padStart(2, '0');
-      }
+  //取得去回程和路線(value:去返程)
+  //取得到站預估時間(value:去返程)
+  function getData(value: number) {
+    axios
+      .all([
+        axios.get(
+          `https://tdx.transportdata.tw/api/basic/v2/Bus/StopOfRoute/City/Kaohsiung/${routeID}?%24format=JSON`
+        ),
+        axios.get(
+          `https://tdx.transportdata.tw/api/basic/v2/Bus/EstimatedTimeOfArrival/City/Kaohsiung/${routeID}?%24format=JSON`
+        ),
+      ])
+      .then((res) => {
+        //篩選去回程和路線資料
+        const data1 = res[0].data?.filter(
+          (x) => x.Direction === value && x.RouteID === routeID
+        );
+        const BusRouteData = data1?.map((a) =>
+          a.Stops?.map((b) => {
+            return {
+              StopID: b.StopID,
+              StopName: b.StopName.Zh_tw,
+            };
+          })
+        );
+        const AllBusRouteData = BusRouteData.flat(1);
+        setBusRouteData(AllBusRouteData);
 
-      const BusTime = EstimateTime === undefined ? NextBusTime : EstimateTime;
-      return {
-        StopID: a.StopID,
-        BusTime: BusTime === undefined ? '末班駛離' : BusTime,
-      };
-    });
-    setBusTimeData(BusTimeData);
+        //篩選到站預估時間資料
+        const data2 = res[1].data?.filter(
+          (x) => x.Direction === value && x.RouteID === routeID
+        );
+        const BusTimeData = data2?.map((a) => {
+          const EstimateTime: string | undefined =
+            a.EstimateTime === undefined
+              ? undefined
+              : Math.floor(a.EstimateTime / 60) < 3
+              ? '即將到站'
+              : Math.floor(a.EstimateTime / 60).toString() + '分';
+
+          let NextBusTime = undefined;
+          if (a.NextBusTime !== undefined) {
+            const date = new Date(a.NextBusTime);
+            NextBusTime =
+              date.getHours().toString().padStart(2, '0') +
+              ':' +
+              date.getMinutes().toString().padStart(2, '0');
+          }
+
+          const BusTime =
+            EstimateTime === undefined ? NextBusTime : EstimateTime;
+          return {
+            StopID: a.StopID,
+            BusTime: BusTime === undefined ? '末班駛離' : BusTime,
+          };
+        });
+        setBusTimeData(BusTimeData);
+      })
+      .catch((err) => {
+        alert('抓取資料錯誤，請確認後再試');
+        setIsVisible(false);
+        console.error(err);
+      })
+      .finally(() => setIsLoading(false));
   }
 
   return (
@@ -228,7 +304,7 @@ function Bus() {
           >
             <Button
               className="go-btn"
-              variant="contained"
+              variant={!isBackClick ? 'contained' : 'outlined'}
               color="success"
               sx={{ m: 3, width: '50%' }}
               onClick={() => {
@@ -239,7 +315,7 @@ function Bus() {
             </Button>
             <Button
               className="back-btn"
-              variant="outlined"
+              variant={isBackClick ? 'contained' : 'outlined'}
               color="success"
               sx={{ m: 3, width: '50%' }}
               onClick={() => {
